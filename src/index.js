@@ -16,14 +16,15 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection', ( socket ) => {
     console.log('New connection')
     socket.emit('message', 'Welcome')
-    // socket.emit('countUpdated',count)
 
-    // socket.on('increment', () => {
-    //     count++
-    //     io.emit('countUpdated', count)
-    // })
+    socket.broadcast.emit('message', 'A new user joined')
+
     socket.on('sendMessage', (message) => {
         io.emit('newMessage', message)
+    })
+
+    socket.on('disconnect', () => {
+        io.emit('message', 'A user left')
     })
 })
 
