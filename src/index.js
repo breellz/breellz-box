@@ -20,9 +20,11 @@ io.on('connection', ( socket ) => {
     socket.broadcast.emit('message', 'A new user joined')
 
     socket.on('sendMessage', (message) => {
-        io.emit('newMessage', message)
+        io.emit('message', message)
     })
-
+    socket.on('sendLocation', (location) => {
+        io.emit('message', `location: ${location.latitude}, ${location.longitude}`)
+    })
     socket.on('disconnect', () => {
         io.emit('message', 'A user left')
     })
