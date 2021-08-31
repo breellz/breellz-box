@@ -17,9 +17,18 @@ app.use(express.static(publicDirectoryPath))
 
 io.on('connection', ( socket ) => {
     console.log('New connection')
+    socket.on('join', ({ username, room }) => {
+        socket.join(room)
+        
+    //sends broadcast to a specific clients
     socket.emit('message', generateMessage('Welcome'))
 
-    socket.broadcast.emit('message', generateMessage('A new user joined'))
+    //sends broadcast to all others except this one
+   // socket.broadcast.emit('message', generateMessage('A new user joined'))
+   //sends broadcast to all others in a room except this one
+    socket.broadcast.to(room).emit('message', generateMessage(`${username} joined the room!`))
+
+    })
 
     socket.on('sendMessage', (message, callback) => {
         const filter = new Filter()
@@ -28,10 +37,11 @@ io.on('connection', ( socket ) => {
             return callback('Profanity is not allowed')
         }
 
-        io.emit('message', generateMessage(message))
+        io.to('B').emit('message', generateMessage(message))
         callback()
     })
     socket.on('sendLocation', (location, callback) => {
+        //sends broadcast to all connected clients
         io.emit('locationMessage', generateLocationMessage(`https://google.com/maps?q=${location.latitude},${location.longitude}`))
         callback()
     })
