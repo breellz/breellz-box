@@ -10,27 +10,66 @@ const $messages = document.querySelector('#messages')
 //Templates
 const messageTemplate = document.querySelector('#message-template').innerHTML
 const locationMessageTemplate = document.querySelector('#locationMessage-template').innerHTML
-
+const sideBarTemplate = document.querySelector('#sidebar-template').innerHTML
 //options
 const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true })
+
+const autoScroll = () => {
+    // New message element
+    const $newMessage = $messages.lastElementChild
+
+    //height of the new message
+    const newMessageStyles = getComputedStyle($newMessage)
+    const newMessageMargin = parseInt(newMessageStyles.marginBottom)
+    const newMessageHeight = $newMessage.offsetHeight + newMessageMargin
+
+    //visible height
+    const visibleHeight = $messages.offsetHeight
+
+    //Height of messages container
+
+    const containerHeight = $messages.scrollHeight
+
+    //How far have I scrolled
+
+    const scrollOffset = $messages.scrollTop + visibleHeight
+
+    if ( containerHeight - newMessageHeight <= scrollOffset) {
+        $messages.scrollTop = $messages.scrollHeight
+    }
+
+
+}
 
 //message handler
 socket.on('message', (message)=> {
         console.log(message)
         const html = Mustache.render(messageTemplate, {
+            username: message.username,
             message: message.text,
             createdAt: moment(message.createdAt).format('h:mm a')
         })
         $messages.insertAdjacentHTML('beforeend', html)
+        autoScroll()
 })
 //location handler
 
 socket.on('locationMessage', (locationMessage) => {
     const html = Mustache.render(locationMessageTemplate, {
+        username: locationMessage.username,
         createdAt: moment(locationMessage.createdAt).format('h:mm a'),
         url: locationMessage.url
     })
     $messages.insertAdjacentHTML('beforeend', html)
+    autoScroll()
+})
+
+socket.on('roomData', ({ room, users }) => {
+    const html = Mustache.render(sideBarTemplate, {
+        room,
+        users
+    })
+    document.querySelector('#sidebar').innerHTML = html
 })
 
 
